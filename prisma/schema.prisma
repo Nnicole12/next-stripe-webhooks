@@ -1,0 +1,27 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  stripeSessionId  String?     @unique // ID de la sesión de Checkout de Stripe para emparejar webhooks
+  customerEmail    String
+  amount           Int         // Almacenado en centavos (ej: 1000 = $10.00) para evitar problemas de precisión decimal
+  currency         String      // Ej: "usd", "mxn"
+  status           OrderStatus @default(PENDING)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([stripeSessionId])
+}
